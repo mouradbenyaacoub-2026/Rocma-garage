@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "rocmaGarage": {
+      ".read": "auth != null && (auth.token.email === 'admin@rocma-garage.app' || auth.token.email === 'mecanicien@rocma-garage.app')",
+      ".write": "auth != null && (auth.token.email === 'admin@rocma-garage.app' || auth.token.email === 'mecanicien@rocma-garage.app')"
+    }
+  }
+}
