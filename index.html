@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rocma Garage</title>
+<style>
+:root{--navy:#102b46;--blue:#1769aa;--bg:#f2f5f9;--ink:#182230;--muted:#667085;--line:#dce3eb;--green:#16804a;--orange:#a15c00;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:18px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:22px;margin:0 0 5px}header small{color:#c9d8e7}
+main{max-width:1050px;margin:18px auto;padding:0 12px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+button,.btn{border:0;border-radius:10px;padding:11px 14px;background:var(--blue);color:white;font-size:14px;cursor:pointer}
+button.secondary,.btn.secondary{background:#e6edf5;color:#18324b}button.danger{background:var(--red)}
+.card{background:white;border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 2px 8px #14283b0a}
+h2{font-size:17px;margin:0 0 13px}.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px;min-height:95px}.stat small{display:block;color:var(--muted);font-size:12px;line-height:1.5}.stat strong{display:block;font-size:28px;margin-top:7px;color:var(--blue)}
+.stat.green strong{color:var(--green)}.stat.orange strong{color:var(--orange)}.stat.red strong{color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:white;font-size:15px;color:var(--ink)}
+textarea{min-height:72px;resize:vertical}.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.item{border:1px solid var(--line);border-radius:12px;padding:13px;margin:10px 0;background:#fff}
+.itemtop{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.num{font-weight:bold;color:var(--blue);font-size:17px}
+.meta{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.8}
+.pill{display:inline-block;border-radius:30px;padding:5px 10px;font-size:12px;background:#fff1cc;color:#805600}
+.pill.ready{background:#e5f5eb;color:#176b3b}.pill.delivered{background:#e8eef7;color:#344c68}.pill.overdue{background:#fee4e2;color:#b42318}
+.empty{color:var(--muted);text-align:center;padding:20px}.hidden{display:none}
+.notice{background:#fff5e5;border:1px solid #f3d39b;color:#754900;padding:11px;border-radius:10px;margin:10px 0;font-size:13px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.filters select{max-width:220px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats .stat:last-child{grid-column:1/-1}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}header{align-items:flex-start;flex-direction:column}}
+
+#loginGate{position:fixed;inset:0;background:#f2f5f9;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
+#loginBox{width:min(420px,100%);background:white;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 8px 30px #14283b18}
+#loginBox h2{font-size:22px;color:var(--navy)}#loginBox p{color:var(--muted);line-height:1.6}
+#loginError{color:var(--red);font-size:13px;min-height:20px}
+#userBar{display:flex;align-items:center;gap:10px;color:#fff;font-size:13px}
+#userBar button{padding:7px 10px;background:#31516f}
+</style></head>
+<body>
+<div id="loginGate">
+ <div id="loginBox">
+  <h2>ROCMA GARAGE</h2>
+  <p>تسجيل الدخول إلى نظام المحل والمزامنة السحابية</p>
+  <label for="loginUser">اسم المستخدم</label>
+  <input id="loginUser" autocomplete="username" placeholder="المسؤول أو مصلح">
+  <label for="loginPass" style="margin-top:12px">كلمة المرور</label>
+  <input id="loginPass" type="password" autocomplete="current-password" placeholder="كلمة المرور">
+  <div id="loginError"></div>
+  <button id="loginBtn" style="width:100%;margin-top:10px">دخول</button>
+ </div>
+</div>
+<header><div><h1>ROCMA GARAGE</h1><small id="subtitle">لوحة تسيير إصلاح الدراجات الكهربائية والسكوترات</small></div>
+<div id="userBar"><span id="signedUser"></span><button id="logoutBtn">خروج</button></div><select id="lang" style="width:auto"><option value="ar">العربية</option><option value="fr">Français</option></select></header>
+<main>
+<div class="toolbar">
+<button id="newBtn">+ تسجيل دراجة جديدة</button><button class="secondary" id="settingsBtn">⚙ إعدادات المدة</button><button class="secondary" id="exportBtn">نسخ احتياطي</button>
+<label class="btn secondary" style="display:inline-flex;align-items:center;margin:0">استرجاع نسخة<input id="importFile" type="file" accept="application/json" style="display:none"></label>
+</div>
+<section class="stats" aria-label="إحصائيات">
+<div class="stat"><small id="sWaiting">لم تُصلح بعد</small><strong id="nWaiting">0</strong></div>
+<div class="stat green"><small id="sFixed">تم إصلاحها</small><strong id="nFixed">0</strong></div>
+<div class="stat"><small id="sCollected">أخذها الزبون</small><strong id="nCollected">0</strong></div>
+<div class="stat orange"><small id="sNotCollected">لم يأخذها الزبون</small><strong id="nNotCollected">0</strong></div>
+<div class="stat red"><small id="sOverdue">تجاوزت المدة</small><strong id="nOverdue">0</strong></div>
+</section>
+<div id="overdueNotice"></div>
+<section class="card hidden" id="settingsCard">
+<h2 id="settingsTitle">إعدادات مدة الاحتفاظ بالدراجة بعد الإصلاح</h2>
+<div class="grid"><div><label id="maxDaysLabel">الحد الأقصى بالأيام</label><input id="maxDays" type="number" min="1" max="365" value="15"></div>
+<div style="display:flex;align-items:end"><button id="saveSettings">حفظ الإعدادات</button></div></div>
+<p id="settingsHint" class="meta">المدة الافتراضية 15 يوماً من تاريخ اكتمال الإصلاح. يمكنك تغييرها حسب سياسة المحل.</p>
+</section>
+<section class="card" id="formCard">
+<h2 id="formTitle">بطاقة استلام جديدة</h2>
+<div class="grid">
+<div><label id="lCustomer">اسم الزبون</label><input id="customer"></div>
+<div><label id="lPhone">الهاتف</label><input id="phone" inputmode="tel"></div>
+<div><label id="lType">نوع الدراجة</label><select id="type"><option>Trottinette</option><option>Vélo électrique</option><option>أخرى</option></select></div>
+<div><label id="lBrand">العلامة / الموديل</label><input id="brand" placeholder="Xiaomi..."></div>
+<div><label id="lDate">تاريخ الاستلام</label><input id="date" type="date"></div>
+<div><label id="lStatus">الحالة</label><select id="status"><option value="received">تم الاستلام</option><option value="diagnosis">قيد التشخيص</option><option value="repair">قيد الإصلاح</option><option value="ready">تم الإصلاح - في انتظار الزبون</option><option value="delivered">تم التسليم للزبون</option></select></div>
+<div class="wide"><label id="lProblem">العطل / ملاحظات</label><textarea id="problem"></textarea></div>
+<div><label id="lPrice">ثمن الإصلاح (درهم)</label><input id="price" type="number" min="0"></div>
+<div><label id="lDue">موعد متوقع للإصلاح (اختياري)</label><input id="due" type="date"></div>
+</div>
+<div class="actions"><button id="saveBtn">حفظ البطاقة</button><button class="secondary" id="cancelBtn">إلغاء</button></div>
+</section>
+<section class="card"><h2 id="listTitle">سجل الدراجات</h2><input id="search" placeholder="ابحث برقم البطاقة أو اسم الزبون أو الهاتف">
+<div class="filters"><select id="filterStatus"><option value="">كل الحالات</option><option value="waiting">لم تُصلح بعد</option><option value="ready">تم الإصلاح ولم تُسلّم</option><option value="delivered">تم التسليم</option><option value="overdue">تجاوزت المدة</option></select></div>
+<div id="records"></div></section>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDZOPVnKT-IoS5yo9w9ocMCCXT1VA1laXk",
+  authDomain: "rocma-trottinette.firebaseapp.com",
+  databaseURL: "https://rocma-trottinette-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "rocma-trottinette",
+  storageBucket: "rocma-trottinette.firebasestorage.app",
+  messagingSenderId: "1073515601808",
+  appId: "1:1073515601808:web:577ee1ff95a9b082699d15",
+  measurementId: "G-DGPVRFJMLC"
+};
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getDatabase(firebaseApp);
+const cloudRef = ref(db, "rocmaGarage/main");
+let cloudReady = false, applyingCloud = false, cloudUnsubscribe = null;
+const loginAliases = {
+  "admin": "admin@rocma-garage.app",
+  "المسؤول": "admin@rocma-garage.app",
+  "مصلح": "mecanicien@rocma-garage.app",
+  "mecanicien": "mecanicien@rocma-garage.app",
+  "mechanic": "mecanicien@rocma-garage.app"
+};
+const $=id=>document.getElementById(id);
+let records=JSON.parse(localStorage.getItem('rocma_records')||'[]');
+let settings=JSON.parse(localStorage.getItem('rocma_settings')||'{"maxDays":15}');
+let editing=null,lang='ar';
+const words={
+ar:{sub:'لوحة تسيير إصلاح الدراجات الكهربائية والسكوترات',new:'+ تسجيل دراجة جديدة',settings:'⚙ إعدادات المدة',backup:'نسخ احتياطي',form:'بطاقة استلام جديدة',customer:'اسم الزبون',phone:'الهاتف',type:'نوع الدراجة',brand:'العلامة / الموديل',date:'تاريخ الاستلام',status:'الحالة',problem:'العطل / ملاحظات',price:'ثمن الإصلاح (درهم)',due:'موعد متوقع للإصلاح (اختياري)',save:'حفظ البطاقة',cancel:'إلغاء',list:'سجل الدراجات',search:'ابحث برقم البطاقة أو اسم الزبون أو الهاتف',waiting:'لم تُصلح بعد',fixed:'تم إصلاحها',collected:'أخذها الزبون',notCollected:'لم يأخذها الزبون',overdue:'تجاوزت المدة',received:'تم الاستلام',diagnosis:'قيد التشخيص',repair:'قيد الإصلاح',ready:'تم الإصلاح - في انتظار الزبون',delivered:'تم التسليم للزبون',edit:'تعديل',del:'حذف',wa:'واتساب',empty:'لا توجد دراجات مسجلة',confirm:'هل تريد حذف هذه البطاقة؟',settingsTitle:'إعدادات مدة الاحتفاظ بالدراجة بعد الإصلاح',maxDaysLabel:'الحد الأقصى بالأيام',settingsHint:'المدة الافتراضية 15 يوماً من تاريخ اكتمال الإصلاح. يمكنك تغييرها حسب سياسة المحل.',saved:'تم حفظ الإعدادات',overdueNotice:'تنبيه: توجد دراجات تجاوزت مدة الانتظار المحددة.',days:'يوم',readyDate:'تاريخ انتهاء الإصلاح',deliveredDate:'تاريخ التسليم',filterAll:'كل الحالات',filterWaiting:'لم تُصلح بعد',filterReady:'تم الإصلاح ولم تُسلّم',filterDelivered:'تم التسليم',filterOverdue:'تجاوزت المدة',remaining:'المدة المتبقية',late:'متأخرة بـ',receivedOn:'تاريخ الاستلام',notSet:'غير محدد'},
+fr:{sub:'Gestion des réparations de vélos électriques et trottinettes',new:'+ Nouvelle réception',settings:'⚙ Délai autorisé',backup:'Sauvegarder',form:'Fiche de réception',customer:'Nom du client',phone:'Téléphone',type:'Type',brand:'Marque / modèle',date:'Date de réception',status:'Statut',problem:'Panne / remarques',price:'Prix réparation (MAD)',due:'Date prévue de réparation (facultatif)',save:'Enregistrer',cancel:'Annuler',list:'Registre des véhicules',search:'Rechercher par numéro, client ou téléphone',waiting:'Pas encore réparées',fixed:'Réparées',collected:'Récupérées par le client',notCollected:'En attente de retrait',overdue:'Délai dépassé',received:'Reçu',diagnosis:'Diagnostic',repair:'En réparation',ready:'Réparé - en attente du client',delivered:'Remis au client',edit:'Modifier',del:'Supprimer',wa:'WhatsApp',empty:'Aucun véhicule enregistré',confirm:'Supprimer cette fiche ?',settingsTitle:'Délai maximum de garde après réparation',maxDaysLabel:'Nombre maximum de jours',settingsHint:'Délai par défaut : 15 jours après la fin de la réparation. Modifiable selon votre politique.',saved:'Paramètres enregistrés',overdueNotice:'Attention : des véhicules ont dépassé le délai autorisé.',days:'jours',readyDate:'Date de fin de réparation',deliveredDate:'Date de remise',filterAll:'Tous les statuts',filterWaiting:'Pas encore réparées',filterReady:'Réparées non remises',filterDelivered:'Remises au client',filterOverdue:'Délai dépassé',remaining:'Délai restant',late:'Retard de',receivedOn:'Réception',notSet:'Non défini'}
+};
+function t(k){return words[lang][k]||k}
+function dayDiff(a,b){if(!a||!b)return 0;return Math.floor((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000)}
+function isOverdue(x){return x.status==='ready'&&x.readyDate&&dayDiff(x.readyDate,today())>Number(settings.maxDays||15)}
+function today(){return new Date().toISOString().slice(0,10)}
+function persist(){
+ localStorage.setItem('rocma_records',JSON.stringify(records));
+ if(auth.currentUser && cloudReady && !applyingCloud){
+  set(cloudRef,{records,settings,updatedAt:Date.now(),updatedBy:auth.currentUser.uid})
+   .catch(err=>console.error("Cloud sync error",err));
+ }
+}
+function setLang(){
+ lang=$('lang').value;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+ $('subtitle').textContent=t('sub');$('newBtn').textContent=t('new');$('settingsBtn').textContent=t('settings');$('exportBtn').textContent=t('backup');
+ $('formTitle').textContent=t('form');$('listTitle').textContent=t('list');$('search').placeholder=t('search');
+ $('saveBtn').textContent=t('save');$('cancelBtn').textContent=t('cancel');$('settingsTitle').textContent=t('settingsTitle');$('maxDaysLabel').textContent=t('maxDaysLabel');$('settingsHint').textContent=t('settingsHint');
+ $('sWaiting').textContent=t('waiting');$('sFixed').textContent=t('fixed');$('sCollected').textContent=t('collected');$('sNotCollected').textContent=t('notCollected');$('sOverdue').textContent=t('overdue');
+ $('filterStatus').options[0].text=t('filterAll');$('filterStatus').options[1].text=t('filterWaiting');$('filterStatus').options[2].text=t('filterReady');$('filterStatus').options[3].text=t('filterDelivered');$('filterStatus').options[4].text=t('filterOverdue');
+ ['customer','phone','type','brand','date','status','problem','price','due'].forEach(x=>{let el=$('l'+x[0].toUpperCase()+x.slice(1));if(el)el.textContent=t(x)});
+ render();
+}
+function updateStats(){
+ let waiting=records.filter(x=>['received','diagnosis','repair'].includes(x.status)).length;
+ let fixed=records.filter(x=>['ready','delivered'].includes(x.status)).length;
+ let collected=records.filter(x=>x.status==='delivered').length;
+ let notCollected=records.filter(x=>x.status==='ready').length;
+ let overdue=records.filter(isOverdue).length;
+ $('nWaiting').textContent=waiting;$('nFixed').textContent=fixed;$('nCollected').textContent=collected;$('nNotCollected').textContent=notCollected;$('nOverdue').textContent=overdue;
+ $('overdueNotice').innerHTML=overdue?'<div class="notice">'+t('overdueNotice')+' ('+overdue+')</div>':'';
+}
+function save(){
+ let old=records.find(x=>x.id===editing);
+ let status=$('status').value;
+ let obj={id:editing||Date.now(),number:old?.number||'',customer:$('customer').value.trim(),phone:$('phone').value.trim(),type:$('type').value,brand:$('brand').value.trim(),date:$('date').value||today(),status,problem:$('problem').value.trim(),price:$('price').value,due:$('due').value,readyDate:old?.readyDate||'',deliveredDate:old?.deliveredDate||''};
+ if(!obj.customer){alert(t('customer'));return}
+ if(status==='ready'&&!obj.readyDate)obj.readyDate=today();
+ if(status==='delivered'){if(!obj.readyDate)obj.readyDate=today();if(!obj.deliveredDate)obj.deliveredDate=today()}
+ if(status!=='delivered')obj.deliveredDate='';
+ if(status!=='ready'&&status!=='delivered')obj.readyDate='';
+ if(!obj.number)obj.number='RG-'+String(Math.max(0,...records.map(x=>Number(String(x.number||'').split('-')[1])||0))+1).padStart(4,'0');
+ if(editing)records=records.map(x=>x.id===editing?obj:x);else records.unshift(obj);
+ persist();editing=null;clearForm();render();
+}
+function clearForm(){['customer','phone','brand','problem','price','due'].forEach(x=>$(x).value='');$('date').value=today();$('status').value='received';$('formTitle').textContent=t('form')}
+function render(){
+ updateStats();let q=$('search').value.toLowerCase(),f=$('filterStatus').value;
+ let list=records.filter(x=>[x.number,x.customer,x.phone,x.brand].join(' ').toLowerCase().includes(q));
+ if(f==='waiting')list=list.filter(x=>['received','diagnosis','repair'].includes(x.status));
+ if(f==='ready')list=list.filter(x=>x.status==='ready');
+ if(f==='delivered')list=list.filter(x=>x.status==='delivered');
+ if(f==='overdue')list=list.filter(isOverdue);
+ $('records').innerHTML='';
+ if(!list.length){$('records').innerHTML='<div class="empty">'+t('empty')+'</div>';return}
+ list.forEach(x=>{
+  let late=isOverdue(x),statusClass=x.status==='ready'?'ready':x.status==='delivered'?'delivered':'';
+  let duration=x.status==='ready'&&x.readyDate?dayDiff(x.readyDate,today()):null;
+  let timing=duration===null?'':(late?`<span class="pill overdue">${t('late')} ${duration-Number(settings.maxDays)} ${t('days')}</span>`:`<span class="pill ready">${t('remaining')}: ${Math.max(0,Number(settings.maxDays)-duration)} ${t('days')}</span>`);
+  let el=document.createElement('div');el.className='item';
+  el.innerHTML=`<div class="itemtop"><span class="num">${x.number||'RG'}</span><span class="pill ${late?'overdue':statusClass}">${t(x.status)}</span></div>
+  <div><b>${esc(x.customer)}</b> · ${esc(x.type)} ${esc(x.brand)}</div>
+  <div class="meta">${esc(x.phone)}<br>${t('receivedOn')}: ${esc(x.date)}<br>${esc(x.problem)}<br>${t('price')}: ${esc(x.price||'0')} MAD
+  ${x.readyDate?'<br>'+t('readyDate')+': '+esc(x.readyDate):''}${x.deliveredDate?'<br>'+t('deliveredDate')+': '+esc(x.deliveredDate):''}
+  ${x.due?'<br>'+t('due')+': '+esc(x.due):''}<br>${timing}</div>
+  <div class="actions"><button class="secondary" data-edit="${x.id}">${t('edit')}</button><button class="danger" data-del="${x.id}">${t('del')}</button><button class="secondary" data-wa="${x.id}">${t('wa')}</button></div>`;
+  $('records').appendChild(el);
+ });
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('saveBtn').onclick=save;$('cancelBtn').onclick=()=>{editing=null;clearForm()};
+$('newBtn').onclick=()=>{editing=null;clearForm();$('formCard').scrollIntoView({behavior:'smooth'})};
+$('settingsBtn').onclick=()=>$('settingsCard').classList.toggle('hidden');
+$('saveSettings').onclick=()=>{let n=Math.max(1,Math.min(365,Number($('maxDays').value)||15));settings.maxDays=n;localStorage.setItem('rocma_settings',JSON.stringify(settings));persist();$('maxDays').value=n;alert(t('saved'));render()};
+$('search').oninput=render;$('filterStatus').onchange=render;$('lang').onchange=setLang;
+$('records').onclick=e=>{
+ let id=Number(e.target.dataset.edit||e.target.dataset.del||e.target.dataset.wa),x=records.find(r=>r.id===id);if(!x)return;
+ if(e.target.dataset.edit){editing=id;['customer','phone','type','brand','date','status','problem','price','due'].forEach(k=>$(k).value=x[k]||'');$('formTitle').textContent=t('edit');$('formCard').scrollIntoView({behavior:'smooth'})}
+ if(e.target.dataset.del&&confirm(t('confirm'))){records=records.filter(r=>r.id!==id);persist();render()}
+ if(e.target.dataset.wa){let msg=lang==='ar'?`مرحبا ${x.customer}، بخصوص إصلاحكم رقم ${x.number}: الحالة ${t(x.status)}.`:`Bonjour ${x.customer}, réparation ${x.number}: ${t(x.status)}.`;location.href='https://wa.me/'+x.phone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg)}
+};
+$('exportBtn').onclick=()=>{let backup={records,settings},blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Rocma-Garage-backup.json';a.click();URL.revokeObjectURL(a.href)};
+$('importFile').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let data=JSON.parse(r.result);records=Array.isArray(data)?data:data.records;settings=data.settings||settings;localStorage.setItem('rocma_settings',JSON.stringify(settings));persist();$('maxDays').value=settings.maxDays||15;render();alert('OK')}catch{alert('Invalid file')}};r.readAsText(f)};
+$('date').value=today();$('maxDays').value=settings.maxDays||15;setLang();render();
+
+function showLogin(show){$('loginGate').style.display=show?'flex':'none'}
+$('loginBtn').onclick=async()=>{
+ const raw=$('loginUser').value.trim().toLowerCase();
+ const email=loginAliases[raw];
+ const password=$('loginPass').value;
+ if(!email){$('loginError').textContent='اكتب: المسؤول أو مصلح';return}
+ if(!password){$('loginError').textContent='أدخل كلمة المرور';return}
+ $('loginError').textContent='جارٍ تسجيل الدخول...';
+ try{await signInWithEmailAndPassword(auth,email,password);$('loginError').textContent=''}
+ catch(e){$('loginError').textContent='تعذر الدخول. تحقق من اسم المستخدم وكلمة المرور وأن الحساب أُنشئ في Firebase.';console.error(e)}
+};
+$('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginBtn').click()});
+$('logoutBtn').onclick=()=>signOut(auth);
+onAuthStateChanged(auth,user=>{
+ if(!user){cloudReady=false;if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null}showLogin(true);$('userBar').style.display='none';return}
+ $('userBar').style.display='flex';
+ const display=user.email?.startsWith('mecanicien@')?'مصلح':'المسؤول';
+ $('signedUser').textContent=display;showLogin(false);
+ if(cloudUnsubscribe)cloudUnsubscribe();
+ cloudUnsubscribe=onValue(cloudRef,snap=>{
+  const data=snap.val();
+  applyingCloud=true;
+  if(data && Array.isArray(data.records)){
+   records=data.records;settings=data.settings||settings;
+  }else{
+   // First authenticated device initializes cloud with its existing local data.
+   set(cloudRef,{records,settings,updatedAt:Date.now(),updatedBy:user.uid})
+    .catch(err=>console.error("Initial cloud sync error",err));
+  }
+  localStorage.setItem('rocma_records',JSON.stringify(records));
+  localStorage.setItem('rocma_settings',JSON.stringify(settings));
+  $('maxDays').value=settings.maxDays||15;
+  cloudReady=true;render();applyingCloud=false;
+ },err=>{console.error(err);$('overdueNotice').textContent='تعذر الاتصال بالسحابة. تحقق من قواعد Firebase والإنترنت.';});
+});
+</script></body></html>
